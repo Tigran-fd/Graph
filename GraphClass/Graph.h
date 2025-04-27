@@ -6,6 +6,8 @@
 #include <vector>
 #include <queue>
 #include <iostream>
+#include <stack>
+#include <algorithm>
 
 #include "Node.h"
 #include "Edge.h"
@@ -90,6 +92,57 @@ public:
         }
         return results;
     }
+    std::vector<T> dfs(const T& start) {
+        std::vector<T> results;
+        std::unordered_map<T, bool> visited;
+        std::stack<T> s;
+        s.push(start);
+        while (!s.empty()) {
+            T current = s.top();
+            s.pop();
+            if (visited[current]) {
+                continue;
+            }
+            visited[current] = true;
+            results.push_back(current);
+            auto next_nodes = getNextNodes(current);
+            for (auto it = next_nodes.rbegin(); it != next_nodes.rend(); ++it) {
+                if (!visited[*it]) {
+                    s.push(*it);
+                }
+            }
+        }
+        return results;
+    }
+
+    bool hasCycle() {
+        std::unordered_map<T, int> visited;
+        std::stack<std::pair<T, bool>> s;
+        for (const auto& [node, _] : all_nodes) {
+            if (visited[node]) {
+                continue;
+            }
+            s.push({node, false});
+            while (!s.empty()) {
+                auto [current, on_stack] = s.top();
+                s.pop();
+                if (!visited[current]) {
+                    visited[current] = 1;
+                    s.push({current, true});
+                    for (const auto& next : getNextNodes(current)) {
+                        if (!visited[next]) {
+                            s.push({next, false});
+                        } else if (visited[next] == 1) {
+                            return true;
+                        }
+                    }
+                } else if (on_stack) {
+                    visited[current] = 2;
+                }
+            }
+        }
+        return false;
+    }
 
     void bfsPrint(const T& start) {
         for (const auto& val : bfs(start)) {
@@ -97,6 +150,48 @@ public:
         }
         std::cout << std::endl;
     }
+
+    void dfsPrint(const T& start)
+    {
+        for (const auto& val : dfs(start)){
+            std::cout << val << " ";
+        }
+        std::cout << std::endl;
+    }
+
+    std::vector<T> findPath(const T& start, const T& end) {
+        std::unordered_map<T, T> parent;
+        std::unordered_map<T, bool> visited;
+        std::stack<T> s;
+        s.push(start);
+        visited[start] = true;
+
+        while (!s.empty()) {
+            T current = s.top();
+            s.pop();
+
+            if (current == end) {
+                std::vector<T> path;
+                for (T at = end; at != start; at = parent[at]) {
+                    path.push_back(at);
+                }
+                path.push_back(start);
+                std::reverse(path.begin(), path.end());
+                return path;
+            }
+
+            for (const auto& neighbor : getNextNodes(current)) {
+                if (!visited[neighbor]) {
+                    visited[neighbor] = true;
+                    parent[neighbor] = current;
+                    s.push(neighbor);
+                }
+            }
+        }
+        return {};
+    }
+
+
 };
 
 #endif // GRAPH_H
