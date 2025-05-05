@@ -13,7 +13,8 @@
 #include "Edge.h"
 
 template <class T, class L>
-class Graph {
+class Graph
+{
     std::unordered_map<T, Node<T>*> all_nodes;
     std::unordered_map<T, std::unordered_set<Edge<T, L>, EdgeHash<T, L>>> in_edges;
     std::unordered_map<T, std::unordered_set<Edge<T, L>, EdgeHash<T, L>>> out_edges;
@@ -191,7 +192,56 @@ public:
         return {};
     }
 
+  std::vector<std::vector<T>> Dijkstra(const T& start) {
 
+        std::priority_queue<std::pair<int, Node<T>*>, std::vector<std::pair<int, Node<T>*>>, std::greater<>> q;
+
+        for (auto& [val, node] : all_nodes) {node->distance = INT_MAX; node->parent = nullptr;}
+
+        auto start_node = get_node(start);
+        start_node->distance = 0;
+        q.emplace(0, start_node);
+
+        while (!q.empty()) {
+            auto [current_dist, current_node] = q.top();
+            q.pop();
+
+            for (const auto& edge : out_edges[current_node->value]) {
+                Node<T>* neighbor = edge.destination;
+                int weight = edge.label;
+                int new_dist = current_node->distance + weight;
+
+                if (new_dist < neighbor->distance) {
+                    neighbor->distance = new_dist;
+                    neighbor->parent = current_node;
+                    q.emplace(new_dist, neighbor);
+                }
+            }
+        }
+
+        std::vector<std::vector<T>> all_paths;
+        for (const auto& [val, node] : all_nodes) {
+            if (node->distance == INT_MAX) continue;
+
+            std::vector<T> path;
+            for (Node<T>* at = node; at != nullptr; at = at->parent) {
+                path.push_back(at->value);
+            }
+
+            std::reverse(path.begin(), path.end());
+
+            if (path.size() > 1 || path.front() == start) {
+                all_paths.push_back(path);
+            }
+        }
+
+        for (auto& [val, node] : all_nodes) {
+            node->distance = INT_MAX;
+            node->parent = nullptr;
+        }
+
+        return all_paths;
+    }
 };
 
 #endif // GRAPH_H
