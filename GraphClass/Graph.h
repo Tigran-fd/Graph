@@ -8,9 +8,11 @@
 #include <iostream>
 #include <stack>
 #include <algorithm>
+#include <set>
 
 #include "Node.h"
 #include "Edge.h"
+#include "DisjointSet.h"
 
 template <class T, class L>
 class Graph
@@ -241,6 +243,76 @@ public:
         }
 
         return all_paths;
+    }
+    std::unordered_map<T, std::unordered_map<T, L>> FloydWarshall() {
+
+        std::unordered_map<T, std::unordered_map<T, L>> dist;
+        for (const auto& [u, node_u] : all_nodes) {
+            for (const auto& [v, node_v] : all_nodes) {
+                if (u == v) {
+                    dist[u][v] = 0;
+                } else {
+                    dist[u][v] = INT_MAX;
+                }
+            }
+        }
+
+        for (const auto& [u, edges] : out_edges) {
+            for (const auto& edge : edges) {
+                dist[edge.source->value][edge.destination->value] = edge.label;
+            }
+        }
+
+        for (const auto& [k, _] : all_nodes) {
+            for (const auto& [i, _] : all_nodes) {
+                for (const auto& [j, _] : all_nodes) {
+                    if (dist[i][k] != INT_MAX && dist[k][j] != INT_MAX) {
+                        if (dist[i][j] > dist[i][k] + dist[k][j]) {
+                            dist[i][j] = dist[i][k] + dist[k][j];
+                        }
+                    }
+                }
+            }
+        }
+        return dist;
+    }
+
+    std::vector<Edge<T, L>> getUndirectedEdges() {
+        std::vector<Edge<T, L>> edges;
+        std::set<std::pair<T, T>> visited;
+        for (const auto& [val, node] : all_nodes) {
+            for (const auto& edge : out_edges.at(val)) {
+                T u = edge.source->value;
+                T v = edge.destination->value;
+                if (u > v) std::swap(u, v);
+                if (!visited.contains({u, v})) {
+                    visited.emplace(u, v);
+                    edges.push_back(edge);
+                }
+            }
+        }
+        return edges;
+    }
+    std::vector<Edge<T, L>> mstKruskal() {
+        auto edges = getUndirectedEdges();
+
+        for (const auto& [val, node] : all_nodes) {
+            DisjointSet<T>::makeSet(node);
+        }
+
+        std::sort(edges.begin(), edges.end());
+
+        std::vector<Edge<T, L>> results;
+        for (const auto& edge : edges) {
+            Node<T>* source = DisjointSet<T>::findSet(edge.source);
+            Node<T>* dest = DisjointSet<T>::findSet(edge.destination);
+
+            if (source != dest) {
+                results.push_back(edge);
+                DisjointSet<T>::unionSet(dest, source);
+            }
+        }
+        return results;
     }
 };
 

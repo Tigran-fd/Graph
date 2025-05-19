@@ -1,4 +1,4 @@
-#include "GraphClass/Graph.h"
+#include "Graph.h"
 #include <vector>
 
 Graph<int, int> ConvertMatrix(const std::vector<std::vector<int>>& matrix)

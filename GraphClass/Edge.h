@@ -21,6 +21,11 @@ public:
 };
 
 template <class T, class L>
+bool operator<(const Edge<T, L>& a, const Edge<T, L>& b) {
+    return a.label < b.label;
+}
+
+template <class T, class L>
 struct EdgeHash {
     std::size_t operator()(const Edge<T, L>& edge) const {
         return std::hash<T>()(edge.source->value) ^

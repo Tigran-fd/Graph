@@ -7,6 +7,7 @@ class Node {
 public:
     T value;
     Node* parent;
+    int rank{};
     int distance = INT_MAX;
     explicit Node(const T& value) : value(value), parent(nullptr) {}
 };
