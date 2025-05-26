@@ -9,6 +9,8 @@ public:
     Node* parent;
     int rank{};
     int distance = INT_MAX;
+    int start = 0;
+    int finish = 0;
     explicit Node(const T& value) : value(value), parent(nullptr) {}
 };
 

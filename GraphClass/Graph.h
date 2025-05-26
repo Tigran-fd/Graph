@@ -8,7 +8,9 @@
 #include <iostream>
 #include <stack>
 #include <algorithm>
+#include <functional>
 #include <set>
+#include <string>
 
 #include "Node.h"
 #include "Edge.h"
@@ -281,13 +283,17 @@ public:
         std::vector<Edge<T, L>> edges;
         std::set<std::pair<T, T>> visited;
         for (const auto& [val, node] : all_nodes) {
-            for (const auto& edge : out_edges.at(val)) {
-                T u = edge.source->value;
-                T v = edge.destination->value;
-                if (u > v) std::swap(u, v);
-                if (!visited.contains({u, v})) {
-                    visited.emplace(u, v);
-                    edges.push_back(edge);
+            for (const auto& [val, node] : all_nodes) {
+                if (out_edges.contains(val)) {
+                    for (const auto& edge : out_edges[val]) {
+                        auto u = edge.source;
+                        auto v = edge.destination;
+                        if (u > v) std::swap(u, v);
+                        if (!visited.contains({u->value, v->value})) {
+                            visited.emplace(u->value, v->value);
+                            edges.push_back(edge);
+                        }
+                    }
                 }
             }
         }
@@ -314,6 +320,61 @@ public:
         }
         return results;
     }
+    bool dfsTopological(const T& node_val, std::unordered_map<T, int>& visited,int& time)
+    {
+        visited[node_val] = 1;
+        Node<T>* node = get_node(node_val);
+        node->start = ++time;
+
+        for (const T& neighbor : getNextNodes(node_val)) {
+            if (visited[neighbor] == 1) {
+                return false;
+            }
+            if (visited[neighbor] == 0) {
+                if (!dfsTopological(neighbor, visited, time))
+                    return false;
+            }
+        }
+        node->finish = ++time;
+        visited[node_val] = 2;
+        return true;
+    }
+    std::vector<T> topologicalSort() {
+        std::unordered_map<T, int> visited;
+        int time = 0;
+
+        for (auto& [val, node] : all_nodes) {
+            node->start = 0;
+            node->finish = 0;
+            visited[val] = 0;
+        }
+
+        for (const auto& [val, _] : all_nodes) {
+            if (visited[val] == 0) {
+                if (!dfsTopological(val, visited, time)) {
+                    std::cout << "Cycle detected - no topological order\n";
+                    return {};
+                }
+            }
+        }
+
+        std::vector<Node<T>*> nodes_vec;
+        for (auto& [val, node] : all_nodes) {
+            nodes_vec.push_back(node);
+        }
+
+        std::sort(nodes_vec.begin(), nodes_vec.end(), [](Node<T>* a, Node<T>* b) {
+            return a->finish > b->finish;
+        });
+
+        std::vector<T> sorted;
+        for (const auto& node : nodes_vec) {
+            sorted.push_back(node->value);
+        }
+        return sorted;
+    }
+
+
 };
 
 #endif // GRAPH_H

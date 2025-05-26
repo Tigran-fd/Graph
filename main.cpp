@@ -1,32 +1,29 @@
+#include "GraphClass/Graph.h"
 #include <iostream>
-#include "GraphClass/Graph.h""
+#include <string>
 
 int main() {
-    Graph<char, int> g;
+    Graph<std::string, int> g;
 
-    g.addNode('A');
-    g.addNode('B');
-    g.addNode('C');
-    g.addNode('D');
-    g.addNode('E');
+    g.addNode("A");
+    g.addNode("B");
+    g.addNode("C");
+    g.addNode("D");
+    g.addNode("E");
+    g.addNode("F");
 
-    g.addEdge('A', 'B', 1);
-    g.addEdge('B', 'A', 1);
-    g.addEdge('A', 'C', 5);
-    g.addEdge('C', 'A', 5);
-    g.addEdge('B', 'C', 3);
-    g.addEdge('C', 'B', 3);
-    g.addEdge('B', 'D', 4);
-    g.addEdge('D', 'B', 4);
-    g.addEdge('C', 'D', 2);
-    g.addEdge('D', 'C', 2);
-    g.addEdge('D', 'E', 7);
-    g.addEdge('E', 'D', 7);
+    g.addEdge("A", "C", 1);
+    g.addEdge("B", "C", 4);
+    g.addEdge("C", "D", 1);
+    g.addEdge("D", "E", 2);
+    g.addEdge("F", "E", 1);
 
-    for (const auto mst = g.mstKruskal(); const auto& edge : mst) {
-        std::cout << edge.source->value << " - " << edge.destination->value
-                  << " : " << edge.label << "\n";
+    std::vector<std::string> result = g.topologicalSort();
+
+    for (const auto& node : result) {
+        std::cout << node << " ";
     }
+    std::cout << std::endl;
 
     return 0;
 }
